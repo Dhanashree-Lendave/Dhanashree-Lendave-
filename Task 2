@@ -1,0 +1,153 @@
+#include <iostream>
+#include <vector>
+#include <iomanip>
+
+class Movie {
+public:
+    std::string title;
+    std::string time;
+    int availableSeats;
+
+    Movie(const std::string& _title, const std::string& _time, int _availableSeats)
+        : title(_title), time(_time), availableSeats(_availableSeats) {}
+};
+
+class Booking {
+public:
+    std::string customerName;
+    int movieIndex;
+    int numTickets;
+
+    Booking(const std::string& _customerName, int _movieIndex, int _numTickets)
+        : customerName(_customerName), movieIndex(_movieIndex), numTickets(_numTickets) {}
+};
+
+class MovieTicketBookingSystem {
+private:
+    std::vector<Movie> movies;
+    std::vector<Booking> bookings;
+
+public:
+    void displayMovies() {
+        std::cout << "Available Movies:\n";
+        std::cout << std::setw(5) << "Index" << std::setw(20) << "Title" << std::setw(15) << "Time" << std::setw(10) << "Seats\n";
+        for (size_t i = 0; i < movies.size(); ++i) {
+            std::cout << std::setw(5) << i + 1 << std::setw(20) << movies[i].title << std::setw(15) << movies[i].time
+                      << std::setw(10) << movies[i].availableSeats << "\n";
+        }
+    }
+
+    void bookTicket() {
+        displayMovies();
+        
+        int movieIndex, numTickets;
+        std::cout << "\nEnter movie index and number of tickets to book: ";
+        std::cin >> movieIndex >> numTickets;
+
+        if (movieIndex <= 0 || movieIndex > static_cast<int>(movies.size()) || numTickets <= 0) {
+            std::cout << "Invalid selection. Please try again.\n";
+            return;
+        }
+
+        Movie& selectedMovie = movies[movieIndex - 1];
+
+        if (numTickets > selectedMovie.availableSeats) {
+            std::cout << "Insufficient seats available. Please choose fewer tickets.\n";
+            return;
+        }
+
+        std::string customerName;
+        std::cout << "Enter your name: ";
+        std::cin.ignore();
+        std::getline(std::cin, customerName);
+
+        selectedMovie.availableSeats -= numTickets;
+        bookings.emplace_back(customerName, movieIndex - 1, numTickets);
+
+        std::cout << "Booking successful! Enjoy the movie.\n";
+    }
+
+    void cancelBooking() {
+        if (bookings.empty()) {
+            std::cout << "No bookings available to cancel.\n";
+            return;
+        }
+
+        std::cout << "Your Bookings:\n";
+        std::cout << std::setw(10) << "Name" << std::setw(20) << "Movie" << std::setw(10) << "Tickets\n";
+        for (const auto& booking : bookings) {
+            std::cout << std::setw(10) << booking.customerName << std::setw(20) << movies[booking.movieIndex].title
+                      << std::setw(10) << booking.numTickets << "\n";
+        }
+
+        int cancelIndex;
+        std::cout << "Enter the index of the booking to cancel: ";
+        std::cin >> cancelIndex;
+
+        if (cancelIndex <= 0 || cancelIndex > static_cast<int>(bookings.size())) {
+            std::cout << "Invalid selection. Please try again.\n";
+            return;
+        }
+
+        Movie& canceledMovie = movies[bookings[cancelIndex - 1].movieIndex];
+        canceledMovie.availableSeats += bookings[cancelIndex - 1].numTickets;
+        bookings.erase(bookings.begin() + cancelIndex - 1);
+
+        std::cout << "Booking canceled successfully.\n";
+    }
+
+    void viewBookings() {
+        if (bookings.empty()) {
+            std::cout << "No bookings available.\n";
+            return;
+        }
+
+        std::cout << "All Bookings:\n";
+        std::cout << std::setw(10) << "Name" << std::setw(20) << "Movie" << std::setw(10) << "Tickets\n";
+        for (const auto& booking : bookings) {
+            std::cout << std::setw(10) << booking.customerName << std::setw(20) << movies[booking.movieIndex].title
+                      << std::setw(10) << booking.numTickets << "\n";
+        }
+    }
+};
+
+int main() {
+    MovieTicketBookingSystem bookingSystem;
+
+    int choice;
+
+    do {
+        std::cout << "\nMovie Ticket Booking System Menu:\n";
+        std::cout << "1. Display Available Movies\n";
+        std::cout << "2. Book a Ticket\n";
+        std::cout << "3. Cancel Booking\n";
+        std::cout << "4. View All Bookings\n";
+        std::cout << "5. Exit\n";
+        std::cout << "Enter your choice: ";
+        std::cin >> choice;
+
+        switch (choice) {
+            case 1:
+                bookingSystem.displayMovies();
+                break;
+            case 2:
+                bookingSystem.bookTicket();
+                break;
+            case 3:
+                bookingSystem.cancelBooking();
+                break;
+            case 4:
+                bookingSystem.viewBookings();
+                break;
+            case 5:
+                std::cout << "Exiting the Movie Ticket Booking System. Goodbye!\n";
+                break;
+            default:
+                std::cout << "Invalid choice. Please try again.\n";
+                break;
+        }
+
+    } while (choice != 5);
+
+    return 0;
+}
